@@ -1,1 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Book Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    body {
+      background: #f8f1e4;
+      font-family: Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
 
+    .book-pages {
+      display: flex;
+      gap: 20px;
+      background: #fffaf0;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    canvas {
+      width: 45vw;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .nav-buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      background: #d8c3a5;
+      color: #333;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 8px;
+      margin: 0 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #c2b092;
+    }
+  </style>
+</head>
+<body>
+  <h2>PDF Book Viewer</h2>
+  <div class="book-pages">
+    <canvas id="leftPage"></canvas>
+    <canvas id="rightPage"></canvas>
+  </div>
+  <div class="nav-buttons">
+    <button onclick="prevPage()">⟵ Prev</button>
+    <button onclick="nextPage()">Next ⟶</button>
+  </div>
+
+  <script>
+    const url = 'https://files.catbox.moe/frzqvm.pdf'; // Replace with your PDF file path
+    let pdfDoc = null;
+    let currentPage = 1;
+    const canvasLeft = document.getElementById('leftPage');
+    const canvasRight = document.getElementById('rightPage');
+    const ctxLeft = canvasLeft.getContext('2d');
+    const ctxRight = canvasRight.getContext('2d');
+
+    const renderPage = async (pageNum, canvas, ctx) => {
+      if (pageNum > pdfDoc.numPages) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+      const page = await pdfDoc.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.5 });
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    };
+
+    const updatePages = () => {
+      renderPage(currentPage, canvasLeft, ctxLeft);
+      renderPage(currentPage + 1, canvasRight, ctxRight);
+    };
+
+    const prevPage = () => {
+      if (currentPage - 2 >= 1) {
+        currentPage -= 2;
+        updatePages();
+      }
+    };
+
+    const nextPage = () => {
+      if (currentPage + 2 <= pdfDoc.numPages) {
+        currentPage += 2;
+        updatePages();
+      }
+    };
+
+    pdfjsLib.getDocument(url).promise.then(pdf => {
+      pdfDoc = pdf;
+      updatePages();
+    });
+  </script>
+</body>
+</html>
