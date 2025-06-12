@@ -4,90 +4,68 @@
   <meta charset="UTF-8">
   <title>Book Viewer</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      background-color: white;
-      font-family: Georgia, serif;
-    }
+<style>
+  body {
+    margin: 0;
+    background-image: url('./ハロウィーン期間中キタユメ。_files/kita_kabe.gif');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-family: Georgia, serif;
+  }
 
-    .top-banner {
-      background-image: url('./ハロウィーン期間中キタユメ。_files/kita_kabe.gif');
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
-      height: 200px;
-      width: 100%;
-    }
+.book-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  flex-wrap: nowrap;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
 
-    .book-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 20px;
-      padding: 20px;
-      flex-wrap: wrap;
-      background-color: #fffaf0;
-    }
+canvas {
+  flex: 1 1 0;
+  max-width: 48vw;
+  height: auto;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
 
-    canvas {
-      display: block;
-      width: 100%;
-      max-width: 45vw;
-      height: auto;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background-color: #fff;
-    }
+  .nav-buttons,
+  .back-button {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+  }
 
-    .nav-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 20px 0 40px;
-    }
+  .nav-buttons img,
+  .back-button img {
+    cursor: pointer;
+    width: 100px;
+    height: auto;
+    transition: transform 0.2s ease;
+  }
 
-    .nav-buttons img {
-      cursor: pointer;
-      width: 100px;
-      height: auto;
-      transition: transform 0.2s ease;
-    }
+  .nav-buttons img:hover,
+  .back-button img:hover {
+    transform: scale(1.05);
+  }
+</style>
 
-    .nav-buttons img:hover {
-      transform: scale(1.05);
-    }
-
-    .back-button {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-
-    .back-button img {
-      cursor: pointer;
-      width: 100px;
-      height: auto;
-      transition: transform 0.2s ease;
-    }
-
-    .back-button img:hover {
-      transform: scale(1.05);
-    }
-
-    #Table_01 tbody tr td p strong {
-      color: #C00;
-    }
-  </style>
 </head>
 <body>
 
-  <div class="top-banner"></div>
+
 
   <!-- Back to Main Site Button -->
   <div class="back-button">
-    <a href="https://yourusername.github.io/">
-      <img src="home-button.png" alt="Back to site">
+    <a href="https://yosukeva.github.io/index/">
+      <img src="https://www.34km.club/bak/kitayume/top.gif" alt="Back to site">
     </a>
   </div>
 
@@ -99,8 +77,8 @@
 
   <!-- Navigation Buttons -->
   <div class="nav-buttons">
-    <img src="prev-button.png" alt="Previous" onclick="goToPrevPage()">
-    <img src="next-button.png" alt="Next" onclick="goToNextPage()">
+    <img src="https://www.34km.club/bak/kitayume/mae.gif" alt="Previous" onclick="goToPrevPage()">
+    <img src="https://www.34km.club/bak/kitayume/tugi.gif" alt="Next" onclick="goToNextPage()">
   </div>
 
   <script>
@@ -120,10 +98,14 @@
       }
 
       const page = await pdfDoc.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2 }); // Render at full res
+      const desiredWidth = window.innerWidth * 0.45; // 45% of screen width
+const viewport = page.getViewport({ scale: 1 });
+const scale = desiredWidth / viewport.width;
+const scaledViewport = page.getViewport({ scale });
 
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+
+      canvas.width = scaledViewport.width;
+canvas.height = scaledViewport.height;
 
       canvas.style.width = "100%";
       canvas.style.height = "auto";
