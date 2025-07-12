@@ -4,7 +4,17 @@
 <head>
   <meta charset="UTF-8" />
   <title>Interactive NyoAme</title>
-  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <script>
+  window.RufflePlayer = window.RufflePlayer || {};
+  window.RufflePlayer.config = {
+    quality: "high",             
+    letterbox: "on",             
+    autoplay: "on",
+    unmuteOverlay: "visible"
+  };
+ </script>
+<script src="https://ruffle.rs/demo/ruffle.js"></script>
+
   <style>
     html, body {
       margin: 0;
