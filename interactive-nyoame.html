@@ -1,21 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Interactive NyoAme</title>
-
-  <!-- Ruffle config -->
-  <script>
-    window.RufflePlayer = window.RufflePlayer || {};
-    window.RufflePlayer.config = {
-      quality: "high",
-      letterbox: "on",
-      autoplay: "on",
-      unmuteOverlay: "visible"
-    };
-  </script>
-  <script src="https://ruffle.rs/demo/ruffle.js"></script>
-
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   <style>
     html, body {
       margin: 0;
@@ -48,8 +37,7 @@
       width: 100%;
       max-width: 768px;
       aspect-ratio: 1 / 1;
-      background-color: #000;
-      margin: 0 auto 10px auto;
+      margin: 0 auto;
     }
 
     .video-title {
@@ -167,6 +155,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="game-container">
