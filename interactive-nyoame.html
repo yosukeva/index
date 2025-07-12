@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Interactive NyoAme</title>
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background-color: #f9f9f9;
+      font-family: "MS PGothic", Arial, sans-serif;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 800px;
+      margin-top: 30px;
+    }
+
+    .game-container {
+      text-align: center;
+    }
+
+    #flash-container {
+      width: 100%;
+      max-width: 768px;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+    }
+
+    .video-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    .info-bar {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 10px;
+    }
+
+    .description {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 15px;
+      white-space: pre-wrap;
+    }
+
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+      margin-bottom: 10px;
+    }
+
+    .like-button, .extra-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+    }
+
+    .like-button img, .extra-button img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .comments-section {
+      margin-top: 30px;
+    }
+
+    .comments-section h3 {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .comments-section input[type="text"],
+    .comments-section textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px;
+      margin-bottom: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: none;
+    }
+
+    .comments-section textarea {
+      height: 60px;
+    }
+
+    .comment {
+      background-color: #f0f0f0;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      font-size: 14px;
+      position: relative;
+    }
+
+    .comment-time {
+      font-size: 12px;
+      color: #777;
+      margin-top: 5px;
+    }
+
+    .comment-author {
+      font-weight: bold;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: red;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .comment[data-owner="true"] .delete-btn {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="game-container">
+      <div id="flash-container"></div>
+    </div>
+
+    <div class="video-title">Interactive Nyo Interactive</div>
+
+    <div class="info-bar">
+      Uploaded by <b>kaveveh</b> • 12 Jul 2025 • <span id="view-count">0</span> views
+    </div>
+
+    <div class="description">
+this was supposed to be like a birthday gift for america(hetalia) but that was like one week ago;)
+HEAVILY inspired.. by the Interactive Hetalia games by NamiOki !
+For mobile users, the audio might be a little delayed. I dont know why..
+    </div>
+
+    <div class="action-bar">
+      <div class="button-group">
+        <button class="like-button" onclick="like()">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Emoji_u1f44d.svg/32px-Emoji_u1f44d.svg.png" alt="Like">
+          <span id="like-count">0</span>
+        </button>
+        <button class="like-button" onclick="dislike()">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Emoji_u1f44e.svg/32px-Emoji_u1f44e.svg.png" alt="Dislike">
+          <span id="dislike-count">0</span>
+        </button>
+      </div>
+      <div class="button-group">
+        <button class="extra-button" onclick="copyLink()">
+          <img src="https://i.ibb.co/nMFVySPK/link.png" alt="Copy" />
+          Copy Link
+        </button>
+        <a href="Interacitve_NyoAmerica.swf" download>
+          <button class="extra-button">
+            <img src="https://cdn-icons-png.flaticon.com/512/724/724933.png" alt="Download">
+            Download SWF
+          </button>
+        </a>
+      </div>
+    </div>
+
+    <div class="comments-section">
+      <h3>💬 Comments</h3>
+      <input type="text" id="nameInput" placeholder="Your name (optional)">
+      <textarea id="commentInput" placeholder="Say something nice!"></textarea>
+      <button onclick="postComment()">Post</button>
+      <div id="comments"></div>
+    </div>
+  </div>
+
+  <script>
+    // LOAD FLASH WITH RUFFLE
+    const ruffle = window.RufflePlayer.newest();
+    const player = ruffle.createPlayer();
+    document.getElementById("flash-container").appendChild(player);
+    player.style.width = "100%";
+    player.style.height = "100%";
+    player.load("Interacitve_NyoAmerica.swf");
+
+    // VIEWS
+    let views = parseInt(localStorage.getItem("views") || "0");
+    views++;
+    localStorage.setItem("views", views);
+    document.getElementById("view-count").textContent = views.toLocaleString();
+
+    // LIKES
+    let likeCount = parseInt(localStorage.getItem("likes") || "0");
+    let dislikeCount = parseInt(localStorage.getItem("dislikes") || "0");
+    document.getElementById("like-count").textContent = likeCount;
+    document.getElementById("dislike-count").textContent = dislikeCount;
+
+    function like() {
+      if (localStorage.getItem("liked") === "true") {
+        alert("You already liked this!");
+        return;
+      }
+      likeCount++;
+      localStorage.setItem("likes", likeCount);
+      localStorage.setItem("liked", "true");
+      document.getElementById("like-count").textContent = likeCount;
+    }
+
+    function dislike() {
+      if (localStorage.getItem("disliked") === "true") {
+        alert("You already disliked this!");
+        return;
+      }
+      dislikeCount++;
+      localStorage.setItem("dislikes", dislikeCount);
+      localStorage.setItem("disliked", "true");
+      document.getElementById("dislike-count").textContent = dislikeCount;
+    }
+
+    function copyLink() {
+      const dummy = document.createElement('input');
+      document.body.appendChild(dummy);
+      dummy.value = window.location.href;
+      dummy.select();
+      document.execCommand('copy');
+      document.body.removeChild(dummy);
+      alert("Link copied!");
+    }
+
+    let ownerKeyBuffer = "";
+    let allowDelete = false;
+
+    document.addEventListener("keydown", (e) => {
+      ownerKeyBuffer += e.key;
+      if (ownerKeyBuffer.length > 20) ownerKeyBuffer = ownerKeyBuffer.slice(-20);
+      if (ownerKeyBuffer.includes("imtheowner123")) {
+        allowDelete = true;
+        renderComments(); 
+      }
+    });
+
+    // COMMENTS
+    let comments = JSON.parse(localStorage.getItem("comments") || "[]");
+    const commentBox = document.getElementById("comments");
+
+    function renderComments() {
+      commentBox.innerHTML = "";
+      comments.forEach((comment, index) => {
+        const div = document.createElement("div");
+        div.className = "comment";
+        if (allowDelete) div.setAttribute("data-owner", "true");
+        div.innerHTML = `
+          <span class="comment-author">${comment.name}</span>
+          ${comment.text}
+          <div class="comment-time">${comment.date}</div>
+          ${allowDelete ? `<button class="delete-btn" onclick="deleteComment(${index})">✖</button>` : ""}
+        `;
+        commentBox.appendChild(div);
+      });
+    }
+
+    function postComment() {
+      const input = document.getElementById("commentInput");
+      const nameField = document.getElementById("nameInput");
+      const text = input.value.trim();
+      const name = nameField.value.trim() || "Anonymous";
+
+      if (text) {
+        const date = new Date().toLocaleString();
+        comments.push({ name, text, date });
+        localStorage.setItem("comments", JSON.stringify(comments));
+        input.value = "";
+        nameField.value = "";
+        renderComments();
+      }
+    }
+
+    function deleteComment(index) {
+      if (!allowDelete) return;
+      if (confirm("Delete this comment?")) {
+        comments.splice(index, 1);
+        localStorage.setItem("comments", JSON.stringify(comments));
+        renderComments();
+      }
+    }
+
+    renderComments();
+  </script>
+</body>
+</html>
