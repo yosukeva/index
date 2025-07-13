@@ -188,7 +188,6 @@ For mobile users, the audio might be a little delayed. I dont know why..
       <div class="button-group">
         <button class="extra-button" onclick="copyLink()">
           <img src="https://i.ibb.co/nMFVySPK/link.png" alt="Copy" />
-          Copy Link
         </button>
         <a href="Interacitve_NyoAmerica.swf" download>
           <button class="extra-button">
@@ -209,9 +208,6 @@ For mobile users, the audio might be a little delayed. I dont know why..
   </div>
 
   <script>
-    const API = "https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api";
-
-    // Flash
     const ruffle = window.RufflePlayer.newest();
     const player = ruffle.createPlayer();
     document.getElementById("flash-container").appendChild(player);
@@ -219,33 +215,56 @@ For mobile users, the audio might be a little delayed. I dont know why..
     player.style.height = "100%";
     player.load("Interacitve_NyoAmerica.swf");
 
-    // Views
-    fetch(`${API}/view`, { method: "POST" })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("view-count").textContent = data.views.toLocaleString();
-      });
+    let views = parseInt(localStorage.getItem("views") || "0");
+    views++;
+    localStorage.setItem("views", views);
+    document.getElementById("view-count").textContent = views.toLocaleString();
 
-    // Likes/Dislikes
+    let likeCount = parseInt(localStorage.getItem("likes") || "0");
+    let dislikeCount = parseInt(localStorage.getItem("dislikes") || "0");
+    document.getElementById("like-count").textContent = likeCount;
+    document.getElementById("dislike-count").textContent = dislikeCount;
+
     function like() {
-      if (localStorage.getItem("liked") === "true") return alert("You already liked this!");
-      fetch(`${API}/like`, { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("like-count").textContent = data.likes;
-          localStorage.setItem("liked", "true");
-        });
+  const liked = localStorage.getItem("liked") === "true";
+  if (liked) {
+    likeCount--;
+    localStorage.setItem("liked", "false");
+  } else {
+    likeCount++;
+    localStorage.setItem("liked", "true");
+    // If user had disliked before, remove that
+    if (localStorage.getItem("disliked") === "true") {
+      dislikeCount--;
+      localStorage.setItem("disliked", "false");
     }
+  }
 
-    function dislike() {
-      if (localStorage.getItem("disliked") === "true") return alert("You already disliked this!");
-      fetch(`${API}/dislike`, { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("dislike-count").textContent = data.dislikes;
-          localStorage.setItem("disliked", "true");
-        });
+  localStorage.setItem("likes", likeCount);
+  localStorage.setItem("dislikes", dislikeCount);
+  document.getElementById("like-count").textContent = likeCount;
+  document.getElementById("dislike-count").textContent = dislikeCount;
+}
+
+function dislike() {
+  const disliked = localStorage.getItem("disliked") === "true";
+  if (disliked) {
+    dislikeCount--;
+    localStorage.setItem("disliked", "false");
+  } else {
+    dislikeCount++;
+    localStorage.setItem("disliked", "true");
+    // If user had liked before, remove that
+    if (localStorage.getItem("liked") === "true") {
+      likeCount--;
+      localStorage.setItem("liked", "false");
     }
+  }
+
+  localStorage.setItem("dislikes", dislikeCount);
+  localStorage.setItem("likes", likeCount);
+  document.getElementById("dislike-co
+
 
     function copyLink() {
       const dummy = document.createElement('input');
@@ -257,9 +276,6 @@ For mobile users, the audio might be a little delayed. I dont know why..
       alert("Link copied!");
     }
 
-    // Comment System
-    let comments = [];
-    const commentBox = document.getElementById("comments");
     let ownerKeyBuffer = "";
     let allowDelete = false;
 
@@ -272,63 +288,65 @@ For mobile users, the audio might be a little delayed. I dont know why..
       }
     });
 
-    function loadComments() {
-      fetch(`${API}/stats`)
-        .then(res => res.json())
-        .then(data => {
-          comments = data.comments || [];
-          document.getElementById("like-count").textContent = data.likes;
-          document.getElementById("dislike-count").textContent = data.dislikes;
-          renderComments();
-        });
-    }
+    const apiBase = "https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api/stats";
 
-    function renderComments() {
-      commentBox.innerHTML = "";
-      comments.forEach((comment, index) => {
-        const div = document.createElement("div");
-        div.className = "comment";
-        if (allowDelete) div.setAttribute("data-owner", "true");
-        div.innerHTML = `
-          <span class="comment-author">${comment.name}</span>
-          ${comment.text}
-          <div class="comment-time">${comment.date}</div>
-          ${allowDelete ? `<button class="delete-btn" onclick="deleteComment(${index})">✖</button>` : ""}
-        `;
-        commentBox.appendChild(div);
-      });
-    }
+async function renderComments() {
+  const res = await fetch(`${apiBase}/comment`);
+  const comments = await res.json();
 
-    function postComment() {
-      const input = document.getElementById("commentInput");
-      const nameField = document.getElementById("nameInput");
-      const text = input.value.trim();
-      const name = nameField.value.trim() || "Anonymous";
+  const commentBox = document.getElementById("comments");
+  commentBox.innerHTML = "";
 
-      if (text) {
-        fetch(`${API}/comment`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, text })
-        }).then(() => {
-          input.value = "";
-          nameField.value = "";
-          loadComments();
-        });
-      }
-    }
+  comments.forEach((comment) => {
+    const div = document.createElement("div");
+    div.className = "comment";
+    if (allowDelete) div.setAttribute("data-owner", "true");
 
-    function deleteComment(index) {
-      if (!allowDelete) return;
-      comments.splice(index, 1);
-      fetch(`${API}/comment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comments })
-      }).then(loadComments);
-    }
+    div.innerHTML = `
+      <span class="comment-author">${comment.name}</span>
+      ${comment.text}
+      <div class="comment-time">${comment.date}</div>
+      ${allowDelete ? `<button class="delete-btn" onclick="deleteComment('${comment.id}')">✖</button>` : ""}
+    `;
+    commentBox.appendChild(div);
+  });
+}
 
-    loadComments();
+async function postComment() {
+  const input = document.getElementById("commentInput");
+  const nameField = document.getElementById("nameInput");
+  const text = input.value.trim();
+  const name = nameField.value.trim() || "Anonymous";
+
+  if (text) {
+    const date = new Date().toLocaleString();
+    await fetch(`${apiBase}/comment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, text, date })
+    });
+    input.value = "";
+    nameField.value = "";
+    renderComments();
+  }
+}
+
+async function deleteComment(id) {
+  if (!allowDelete) return;
+  if (!confirm("Delete this comment?")) return;
+
+  const res = await fetch(`${apiBase}/comment/${id}`, {
+    method: "DELETE"
+  });
+
+  if (res.ok) {
+    renderComments();
+  } else {
+    alert("Failed to delete comment.");
+  }
+}
+
+    renderComments();
   </script>
 </body>
 </html>
