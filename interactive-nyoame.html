@@ -209,7 +209,9 @@ For mobile users, the audio might be a little delayed. I dont know why..
   </div>
 
   <script>
-    // LOAD FLASH WITH RUFFLE
+    const API = "https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api";
+
+    // Flash
     const ruffle = window.RufflePlayer.newest();
     const player = ruffle.createPlayer();
     document.getElementById("flash-container").appendChild(player);
@@ -217,38 +219,32 @@ For mobile users, the audio might be a little delayed. I dont know why..
     player.style.height = "100%";
     player.load("Interacitve_NyoAmerica.swf");
 
-    // VIEWS
-    let views = parseInt(localStorage.getItem("views") || "0");
-    views++;
-    localStorage.setItem("views", views);
-    document.getElementById("view-count").textContent = views.toLocaleString();
+    // Views
+    fetch(`${API}/view`, { method: "POST" })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("view-count").textContent = data.views.toLocaleString();
+      });
 
-    // LIKES
-    let likeCount = parseInt(localStorage.getItem("likes") || "0");
-    let dislikeCount = parseInt(localStorage.getItem("dislikes") || "0");
-    document.getElementById("like-count").textContent = likeCount;
-    document.getElementById("dislike-count").textContent = dislikeCount;
-
+    // Likes/Dislikes
     function like() {
-      if (localStorage.getItem("liked") === "true") {
-        alert("You already liked this!");
-        return;
-      }
-      likeCount++;
-      localStorage.setItem("likes", likeCount);
-      localStorage.setItem("liked", "true");
-      document.getElementById("like-count").textContent = likeCount;
+      if (localStorage.getItem("liked") === "true") return alert("You already liked this!");
+      fetch(`${API}/like`, { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("like-count").textContent = data.likes;
+          localStorage.setItem("liked", "true");
+        });
     }
 
     function dislike() {
-      if (localStorage.getItem("disliked") === "true") {
-        alert("You already disliked this!");
-        return;
-      }
-      dislikeCount++;
-      localStorage.setItem("dislikes", dislikeCount);
-      localStorage.setItem("disliked", "true");
-      document.getElementById("dislike-count").textContent = dislikeCount;
+      if (localStorage.getItem("disliked") === "true") return alert("You already disliked this!");
+      fetch(`${API}/dislike`, { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("dislike-count").textContent = data.dislikes;
+          localStorage.setItem("disliked", "true");
+        });
     }
 
     function copyLink() {
@@ -261,6 +257,9 @@ For mobile users, the audio might be a little delayed. I dont know why..
       alert("Link copied!");
     }
 
+    // Comment System
+    let comments = [];
+    const commentBox = document.getElementById("comments");
     let ownerKeyBuffer = "";
     let allowDelete = false;
 
@@ -273,9 +272,16 @@ For mobile users, the audio might be a little delayed. I dont know why..
       }
     });
 
-    // COMMENTS
-    let comments = JSON.parse(localStorage.getItem("comments") || "[]");
-    const commentBox = document.getElementById("comments");
+    function loadComments() {
+      fetch(`${API}/stats`)
+        .then(res => res.json())
+        .then(data => {
+          comments = data.comments || [];
+          document.getElementById("like-count").textContent = data.likes;
+          document.getElementById("dislike-count").textContent = data.dislikes;
+          renderComments();
+        });
+    }
 
     function renderComments() {
       commentBox.innerHTML = "";
@@ -300,25 +306,29 @@ For mobile users, the audio might be a little delayed. I dont know why..
       const name = nameField.value.trim() || "Anonymous";
 
       if (text) {
-        const date = new Date().toLocaleString();
-        comments.push({ name, text, date });
-        localStorage.setItem("comments", JSON.stringify(comments));
-        input.value = "";
-        nameField.value = "";
-        renderComments();
+        fetch(`${API}/comment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, text })
+        }).then(() => {
+          input.value = "";
+          nameField.value = "";
+          loadComments();
+        });
       }
     }
 
     function deleteComment(index) {
       if (!allowDelete) return;
-      if (confirm("Delete this comment?")) {
-        comments.splice(index, 1);
-        localStorage.setItem("comments", JSON.stringify(comments));
-        renderComments();
-      }
+      comments.splice(index, 1);
+      fetch(`${API}/comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comments })
+      }).then(loadComments);
     }
 
-    renderComments();
+    loadComments();
   </script>
 </body>
 </html>
