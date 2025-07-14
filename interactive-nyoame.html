@@ -197,8 +197,9 @@ For mobile users, the audio might be a little delayed. I dont know why..
     const api = "https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api";
 
     async function fetchStats() {
-      const res = await fetch(`${api}/stats`);
-      const data = await res.json();
+      const res = await fetch("https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api/stats/comment");
+      const comments = await res.json();
+
       document.getElementById("like-count").textContent = data.likes;
       document.getElementById("dislike-count").textContent = data.dislikes;
     }
