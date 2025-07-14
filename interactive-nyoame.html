@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Interactive NyoAme</title>
@@ -18,7 +17,6 @@
       align-items: flex-start;
       min-height: 100vh;
     }
-
     .container {
       background-color: white;
       padding: 20px;
@@ -28,38 +26,32 @@
       max-width: 800px;
       margin-top: 30px;
     }
-
     .game-container {
       text-align: center;
     }
-
     #flash-container {
       width: 100%;
       max-width: 768px;
       aspect-ratio: 1 / 1;
       margin: 0 auto;
     }
-
     .video-title {
       font-size: 20px;
       font-weight: bold;
       margin-top: 15px;
       margin-bottom: 5px;
     }
-
     .info-bar {
       font-size: 13px;
       color: #777;
       margin-bottom: 10px;
     }
-
     .description {
       font-size: 14px;
       color: #555;
       margin-bottom: 15px;
       white-space: pre-wrap;
     }
-
     .action-bar {
       display: flex;
       align-items: center;
@@ -71,7 +63,6 @@
       padding: 10px 0;
       margin-bottom: 10px;
     }
-
     .like-button, .extra-button {
       background: none;
       border: none;
@@ -81,26 +72,21 @@
       gap: 5px;
       font-size: 14px;
     }
-
     .like-button img, .extra-button img {
       width: 20px;
       height: 20px;
     }
-
     .button-group {
       display: flex;
       gap: 10px;
     }
-
     .comments-section {
       margin-top: 30px;
     }
-
     .comments-section h3 {
       font-size: 16px;
       margin-bottom: 5px;
     }
-
     .comments-section input[type="text"],
     .comments-section textarea {
       width: 100%;
@@ -112,11 +98,9 @@
       border-radius: 4px;
       resize: none;
     }
-
     .comments-section textarea {
       height: 60px;
     }
-
     .comment {
       background-color: #f0f0f0;
       padding: 10px;
@@ -125,19 +109,16 @@
       font-size: 14px;
       position: relative;
     }
-
     .comment-time {
       font-size: 12px;
       color: #777;
       margin-top: 5px;
     }
-
     .comment-author {
       font-weight: bold;
       margin-bottom: 4px;
       display: block;
     }
-
     .delete-btn {
       position: absolute;
       top: 5px;
@@ -149,31 +130,25 @@
       cursor: pointer;
       display: none;
     }
-
     .comment[data-owner="true"] .delete-btn {
       display: block;
     }
   </style>
 </head>
-
 <body>
   <div class="container">
     <div class="game-container">
       <div id="flash-container"></div>
     </div>
-
     <div class="video-title">Interactive Nyo Interactive</div>
-
     <div class="info-bar">
       Uploaded by <b>kaveveh</b> • 12 Jul 2025 • <span id="view-count">0</span> views
     </div>
-
     <div class="description">
 this was supposed to be like a birthday gift for america(hetalia) but that was like one week ago;)
 HEAVILY inspired.. by the Interactive Hetalia games by NamiOki !
 For mobile users, the audio might be a little delayed. I dont know why..
     </div>
-
     <div class="action-bar">
       <div class="button-group">
         <button class="like-button" onclick="like()">
@@ -197,7 +172,6 @@ For mobile users, the audio might be a little delayed. I dont know why..
         </a>
       </div>
     </div>
-
     <div class="comments-section">
       <h3>💬 Comments</h3>
       <input type="text" id="nameInput" placeholder="Your name (optional)">
@@ -220,51 +194,38 @@ For mobile users, the audio might be a little delayed. I dont know why..
     localStorage.setItem("views", views);
     document.getElementById("view-count").textContent = views.toLocaleString();
 
-    let likeCount = parseInt(localStorage.getItem("likes") || "0");
-    let dislikeCount = parseInt(localStorage.getItem("dislikes") || "0");
-    document.getElementById("like-count").textContent = likeCount;
-    document.getElementById("dislike-count").textContent = dislikeCount;
+    const api = "https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api";
 
-    function like() {
-  const liked = localStorage.getItem("liked") === "true";
-  if (liked) {
-    likeCount--;
-    localStorage.setItem("liked", "false");
-  } else {
-    likeCount++;
-    localStorage.setItem("liked", "true");
-    // If user had disliked before, remove that
-    if (localStorage.getItem("disliked") === "true") {
-      dislikeCount--;
-      localStorage.setItem("disliked", "false");
+    async function fetchStats() {
+      const res = await fetch(`${api}/stats`);
+      const data = await res.json();
+      document.getElementById("like-count").textContent = data.likes;
+      document.getElementById("dislike-count").textContent = data.dislikes;
     }
-  }
 
-  localStorage.setItem("likes", likeCount);
-  localStorage.setItem("dislikes", dislikeCount);
-  document.getElementById("like-count").textContent = likeCount;
-  document.getElementById("dislike-count").textContent = dislikeCount;
-}
-
-function dislike() {
-  const disliked = localStorage.getItem("disliked") === "true";
-  if (disliked) {
-    dislikeCount--;
-    localStorage.setItem("disliked", "false");
-  } else {
-    dislikeCount++;
-    localStorage.setItem("disliked", "true");
-    // If user had liked before, remove that
-    if (localStorage.getItem("liked") === "true") {
-      likeCount--;
-      localStorage.setItem("liked", "false");
+    async function like() {
+      const liked = localStorage.getItem("liked") === "true";
+      await fetch(`${api}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ undo: liked })
+      });
+      localStorage.setItem("liked", liked ? "false" : "true");
+      if (liked) localStorage.setItem("disliked", "false");
+      fetchStats();
     }
-  }
 
-  localStorage.setItem("dislikes", dislikeCount);
-  localStorage.setItem("likes", likeCount);
-  document.getElementById("dislike-co
-
+    async function dislike() {
+      const disliked = localStorage.getItem("disliked") === "true";
+      await fetch(`${api}/dislike`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ undo: disliked })
+      });
+      localStorage.setItem("disliked", disliked ? "false" : "true");
+      if (disliked) localStorage.setItem("liked", "false");
+      fetchStats();
+    }
 
     function copyLink() {
       const dummy = document.createElement('input');
@@ -284,68 +245,61 @@ function dislike() {
       if (ownerKeyBuffer.length > 20) ownerKeyBuffer = ownerKeyBuffer.slice(-20);
       if (ownerKeyBuffer.includes("imtheowner123")) {
         allowDelete = true;
-        renderComments(); 
+        renderComments();
       }
     });
 
-    const apiBase = "https://16b9dd60-6be2-4286-9db3-0000f75d1350-00-l8t3pqrgfmts.pike.replit.dev/api/stats";
+    async function renderComments() {
+      const res = await fetch(`${api}/comment`);
+      const comments = await res.json();
+      const commentBox = document.getElementById("comments");
+      commentBox.innerHTML = "";
+      comments.forEach((comment) => {
+        const div = document.createElement("div");
+        div.className = "comment";
+        if (allowDelete) div.setAttribute("data-owner", "true");
+        div.innerHTML = `
+          <span class="comment-author">${comment.name}</span>
+          ${comment.text}
+          <div class="comment-time">${comment.date}</div>
+          ${allowDelete ? `<button class="delete-btn" onclick="deleteComment('${comment.id}')">✖</button>` : ""}
+        `;
+        commentBox.appendChild(div);
+      });
+    }
 
-async function renderComments() {
-  const res = await fetch(`${apiBase}/comment`);
-  const comments = await res.json();
+    async function postComment() {
+      const input = document.getElementById("commentInput");
+      const nameField = document.getElementById("nameInput");
+      const text = input.value.trim();
+      const name = nameField.value.trim() || "Anonymous";
+      if (text) {
+        const date = new Date().toLocaleString();
+        await fetch(`${api}/comment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, text, date })
+        });
+        input.value = "";
+        nameField.value = "";
+        renderComments();
+      }
+    }
 
-  const commentBox = document.getElementById("comments");
-  commentBox.innerHTML = "";
+    async function deleteComment(id) {
+      if (!allowDelete) return;
+      if (!confirm("Delete this comment?")) return;
+      const res = await fetch(`${api}/comment/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        renderComments();
+      } else {
+        alert("Failed to delete comment.");
+      }
+    }
 
-  comments.forEach((comment) => {
-    const div = document.createElement("div");
-    div.className = "comment";
-    if (allowDelete) div.setAttribute("data-owner", "true");
-
-    div.innerHTML = `
-      <span class="comment-author">${comment.name}</span>
-      ${comment.text}
-      <div class="comment-time">${comment.date}</div>
-      ${allowDelete ? `<button class="delete-btn" onclick="deleteComment('${comment.id}')">✖</button>` : ""}
-    `;
-    commentBox.appendChild(div);
-  });
-}
-
-async function postComment() {
-  const input = document.getElementById("commentInput");
-  const nameField = document.getElementById("nameInput");
-  const text = input.value.trim();
-  const name = nameField.value.trim() || "Anonymous";
-
-  if (text) {
-    const date = new Date().toLocaleString();
-    await fetch(`${apiBase}/comment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, text, date })
-    });
-    input.value = "";
-    nameField.value = "";
-    renderComments();
-  }
-}
-
-async function deleteComment(id) {
-  if (!allowDelete) return;
-  if (!confirm("Delete this comment?")) return;
-
-  const res = await fetch(`${apiBase}/comment/${id}`, {
-    method: "DELETE"
-  });
-
-  if (res.ok) {
-    renderComments();
-  } else {
-    alert("Failed to delete comment.");
-  }
-}
-
+    fetchStats();
     renderComments();
   </script>
 </body>
