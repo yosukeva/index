@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interactive NyoAme</title>
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   <style>
@@ -14,14 +15,15 @@
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  background-color: #f9f9f9;
 
+  background-color: #f9f9f9;
   background-image: url('./ハロウィーン期間中キタユメ。_files/kita_kabe.gif');
-  background-size: cover;
-  background-repeat: no-repeat;
+  background-repeat: repeat-y;
+  background-size: auto;
   background-position: center top;
   background-attachment: fixed;
 }
+
 
     .container {
       background-color: white;
@@ -118,13 +120,20 @@ For mobile users, the audio might be a little delayed. I dont know why..
     <div class="action-bar">
       <div class="button-group">
         <button class="extra-button" onclick="copyLink()">
-          <img src="https://i.ibb.co/nMFVySPK/link.png" alt="Copy" />
-          Copy Link
+  <img src="https://i.ibb.co/nMFVySPK/link.png" alt="Copy" />
+  Copy Link
+</button>
+
+<div id="copyMsg" style="font-size: 13px; color: green; display: none; margin-top: 4px;">
+  ✅ Link copied!
+</div>
+
+          
         </button>
         <a href="Interacitve_NyoAmerica.swf" download>
           <button class="extra-button">
             <img src="https://cdn-icons-png.flaticon.com/512/724/724933.png" alt="Download">
-            Download SWF
+            SWF
           </button>
         </a>
       </div>
@@ -140,14 +149,21 @@ For mobile users, the audio might be a little delayed. I dont know why..
     player.load("Interacitve_NyoAmerica.swf");
 
     function copyLink() {
-      const dummy = document.createElement('input');
-      document.body.appendChild(dummy);
-      dummy.value = window.location.href;
-      dummy.select();
-      document.execCommand('copy');
-      document.body.removeChild(dummy);
-      alert("Link copied!");
-    }
+  const dummy = document.createElement('input');
+  dummy.value = window.location.href;
+  document.body.appendChild(dummy);
+  dummy.select();
+  document.execCommand('copy');
+  document.body.removeChild(dummy);
+
+  const msg = document.getElementById("copyMsg");
+  msg.style.display = "block";
+
+  setTimeout(() => {
+    msg.style.display = "none";
+  }, 2000); // Hide after 2 seconds
+}
+
   </script>
 </body>
 </html>
